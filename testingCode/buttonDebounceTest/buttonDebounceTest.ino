@@ -26,8 +26,8 @@ int okLastButtonState = 0;
 bool okPressed = 0; 
 
 // the moment the button was pressed and released
-int startPressed = 0;    
-int endPressed = 0;      
+unsigned long startPressed = 0;    
+unsigned long endPressed = 0;      
 
 // the time the button has held for and been released for 
 unsigned long holdTime = 0;  
@@ -43,9 +43,7 @@ void setup() {
 void loop() {
   int okReading = digitalRead(okButton); 
 
-
-  // to check how long it has been since user has done anything 
-  if (okReading != okLastButtonState){
+  if (okButtonState != okLastButtonState){
     lastDetection = millis();
   }
 
@@ -53,6 +51,8 @@ void loop() {
   if ( (millis() - lastDetection) > debounceDelay ){
     okButtonState = okReading; 
   }
+
+
 
   // if the button is pressed or released
   if (okButtonState != okLastButtonState)
@@ -62,13 +62,9 @@ void loop() {
     if (okButtonState == 0)
     {
       startPressed = millis(); 
-
-      idleTime = millis() - endPressed; 
-
       if (okButtonState == 0 & okPressed == 1)
       {
-        Serial.print("======just released======== hold time: ");
-        Serial.println(holdTime); 
+        Serial.println("======just pressed=======");
       }
       okPressed = 0; 
 
@@ -77,15 +73,16 @@ void loop() {
     // if the button is just released 
     else if (okButtonState == 1)
     {
-      endPressed = millis(); 
-      holdTime = millis() - startPressed;
+
+      endPressed = millis();
+      holdTime = endPressed - startPressed; 
       if (okButtonState == 1 && okPressed == 0)
       {
-        Serial.print("---just pressed--- idle time: ");
-        Serial.println(idleTime);
-        // Serial.println("-------ok button press");
+        Serial.print("---just released----: holdtime: ");
+        Serial.println(holdTime);
       }
-      okPressed = 1; 
+
+      okPressed = 1;
     }
 
 
