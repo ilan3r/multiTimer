@@ -6,8 +6,8 @@ Description: test all inputs and outputs on the breadboard version:
 
 */
 
-const int blueLED = 6; // using this instead of buzzer for now
-const int redLED = 3; // using this instead of vibration motor for now 
+const int blueLED = 3; // using this instead of buzzer for now
+const int redLED = 6; // using this instead of vibration motor for now 
 
 const int okButton = 7; 
 const int backButton = 8; 
@@ -31,11 +31,11 @@ void loop() {
     Serial.println("back----");
   }
 
-  // digitalWrite(blueLED, HIGH); 
+  digitalWrite(blueLED, HIGH); 
   // digitalWrite(redLED, LOW); 
-  // delay(500); 
-  // digitalWrite(blueLED, LOW); 
+  delay(500); 
+  digitalWrite(blueLED, LOW); 
   // digitalWrite(redLED, HIGH); 
-  // delay(500);
+  delay(500);
 
 }
