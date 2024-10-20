@@ -27,15 +27,15 @@ void loop() {
   if (digitalRead(okButton) == LOW){
     Serial.println("ok===============================================");
   }
-  if (digitalRead(backButton) == LOW){
-    Serial.println("back----");
-  }
+  // if (digitalRead(backButton) == LOW){
+  //   Serial.println("back----");
+  // }
 
-  digitalWrite(blueLED, HIGH); 
+  // digitalWrite(blueLED, HIGH); 
   // digitalWrite(redLED, LOW); 
-  delay(500); 
-  digitalWrite(blueLED, LOW); 
+  // delay(500); 
+  // digitalWrite(blueLED, LOW); 
   // digitalWrite(redLED, HIGH); 
-  delay(500);
+  // delay(500);
 
 }

@@ -53,7 +53,8 @@ void loop() {
   display.print("output");
   display.setCursor(90,32);
   // display.print("bzz");
-  display.print("rng");
+  // display.print("rng");
+  display.print("amb");
   display.display();
 
 }
