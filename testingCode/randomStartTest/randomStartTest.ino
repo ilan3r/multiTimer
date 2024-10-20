@@ -6,38 +6,43 @@ reusing some code from morse code project
 
 */
 
+enum State {stopwatch_primed, stopwatch_paused, stopwatch_run};
+State currentState = stopwatch_paused;
+int randomStart = 0; 
+unsigned int startRandomWait = 0;
+
 const int blueLED = 3; // using this instead of buzzer for now
 const int redLED = 6; // using this instead of vibration motor for now 
-     
 const int okButton = 7; 
-const int backButton = 8;
+const int backButton = 8; 
 
-
+// button variables 
 long unsigned currentTime = 0; 
-
-
-// the time allowed for button debouncing 
 const int debounceDelay = 10; 
+long okLastDetection;
+int okButtonState = 1; // initialize these to unpressed 
+int okLastButtonState = 1;
+bool okPressed = 0;
+unsigned long okStartPressed = 0; 
+unsigned long okEndPressed = 0;
+unsigned long okHoldTime = 0; 
+unsigned long okIdleTime = 0;
+long backLastDetection;
+int backButtonState = 1;  // initialize these to unpressed 
+int backLastButtonState = 1;
+bool backPressed = 0;
+unsigned long backStartPressed = 0; 
+unsigned long backEndPressed = 0;
+unsigned long backHoldTime = 0; 
+unsigned long backIdleTime = 0;
 
-long lastDetection; 
 
-// the current and previous state of the button
-int okButtonState = 0;     
-int okLastButtonState = 0; 
-bool okPressed = 0; 
+// function prototypes 
+  void buttonState();
+  void handle_stopwatch_paused();
+  void handle_stopwatch_run(); 
+  void handle_stopwatch_primed(); 
 
-// the moment the button was pressed and released
-unsigned long startPressed = 0;    
-unsigned long endPressed = 0;   
-
-int randomStart = 0;
-int startWaitTime = 0; 
-
-// the time the button has held for and been released for 
-unsigned long holdTime = 0;  
-unsigned long idleTime = 0; 
-bool primed = false; 
-bool started = false; 
 
 void setup() {
   Serial.begin(9600); 
@@ -51,55 +56,89 @@ void setup() {
 void loop() {
   buttonState();
 
+  // enum State {stopwatch_primed, stopwatch_pause, stopwatch_run};
 
-  if (okPressed == 0 && primed == false && started == false){
-    primed = true; 
-    startWaitTime = millis(); 
-    randomStart = random(2000, 6000);
 
+  switch (currentState) {
+    case stopwatch_paused: 
+      handle_stopwatch_paused();
+      break;  
+    case stopwatch_primed:
+
+      handle_stopwatch_primed(); 
+      break;
+
+    case stopwatch_run:
+      handle_stopwatch_run(); 
+      break; 
   }
-
-  if (okPressed == 0 && primed == false && started == true){
-    started == false;
-    Serial.println("--------------------------------------------- reset ");
-  }
-
-
-
-  else if (primed==true && (millis()-startWaitTime <= randomStart) && started == false){
-    digitalWrite(redLED, HIGH);
-    Serial.println("--------------------------------------------- PRIMED");
-  }
-
-  else if (primed == true && (millis()-startWaitTime >= randomStart) && started == false){
-    digitalWrite(redLED, LOW);
-    digitalWrite(blueLED, HIGH);
-    started = true;
-    Serial.println("------------------------------------------------ Started"); 
-  }
-
-  
-
-
-
-
 
 }
 
+void handle_stopwatch_paused(){
+  Serial.println("--------------------------------------------------------");
+  buttonState(); 
+  if (okButtonState == 0){
+    Serial.print("primed stopwatch");
+    currentState = stopwatch_primed;
+  }
+  if (backButtonState == 0){
+    Serial.println("reset time");
+  }
 
-// note that okPressed is what tracks if the button is pressed
-// when okPressed == 1, it is unpressed
+}
+
+void handle_stopwatch_primed(){
+  randomStart = random(2000, 6000);
+  startRandomWait = millis(); 
+
+  while (millis() - startRandomWait < randomStart)
+  {
+    buttonState();
+    if (backButtonState == 0){
+      currentState = stopwatch_paused;
+      break;
+    }
+  }
+  currentState = stopwatch_run;
+ 
+}
+
+void handle_stopwatch_run(){
+  Serial.println("run stopwatch");
+  buttonState();
+  if (backButtonState == 0 || okButtonState == 0){
+    Serial.println("stopped stopwatch");
+    currentState = stopwatch_paused;
+
+  }
+
+}
+
 void buttonState(){
   int okReading = digitalRead(okButton); 
+  int backReading = digitalRead(backButton);
 
   if (okButtonState != okLastButtonState){
-    lastDetection = millis();
+    okLastDetection = millis();
   }
 
+  if (backButtonState != backLastButtonState){
+    backLastDetection = millis();
+  }
+
+
   // only accept the change in button state after debounce time
-  if ( (millis() - lastDetection) > debounceDelay ){
+  if ( (millis() - okLastDetection) > debounceDelay ){
     okButtonState = okReading; 
   }
+  // only accept the change in button state after debounce time
+  if ( (millis() - backLastDetection) > debounceDelay ){
+    backButtonState = backReading; 
+  }
+
+
+
   // if the button is pressed or released
   if (okButtonState != okLastButtonState)
   {
@@ -107,28 +146,74 @@ void buttonState(){
     // if the button is just pressed 
     if (okButtonState == 0)
     {
-      startPressed = millis(); 
+      okStartPressed = millis(); 
       if (okButtonState == 0 & okPressed == 1)
       {
-        Serial.println("======just pressed=======");
+        Serial.println("======just pressed ok =======");
       }
       okPressed = 0; 
 
     }
+
+
     // if the button is just released 
     else if (okButtonState == 1)
     {
 
-      endPressed = millis();
-      holdTime = endPressed - startPressed; 
+      okEndPressed = millis();
+      okHoldTime = okEndPressed - okStartPressed; 
       if (okButtonState == 1 && okPressed == 0)
       {
-        Serial.print("---just released----: holdtime: ");
-        Serial.println(holdTime);
+        Serial.print("---just released ok ----: holdtime: ");
+        Serial.println(okHoldTime);
       }
 
       okPressed = 1;
     }
+
+
   }
+
+  // if the back button is pressed or released
+  if (backButtonState != backLastButtonState)
+  {
+
+    // if the button is just pressed 
+    if (backButtonState == 0)
+    {
+      backStartPressed = millis(); 
+      if (backButtonState == 0 & backPressed == 1)
+      {
+        Serial.println("======just pressed back =======");
+      }
+      backPressed = 0; 
+
+    }
+
+
+    // if the button is just released 
+    else if (backButtonState == 1)
+    {
+
+      backEndPressed = millis();
+      backHoldTime = backEndPressed - backStartPressed; 
+      if (backButtonState == 1 && backPressed == 0)
+      {
+        Serial.print("---just released back ----: holdtime: ");
+        Serial.println(backHoldTime);
+      }
+
+      backPressed = 1;
+    }
+
+
+  }
+
+
   okLastButtonState = okReading; 
+  backLastButtonState = backReading; 
+
+
+
 }
+
