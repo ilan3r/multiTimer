@@ -6,7 +6,8 @@ reusing some code from morse code project
 
 */
 
-     
+
+
 
 const int okButton = 7; 
 const int backButton = 8;
@@ -14,6 +15,7 @@ const int backButton = 8;
 
 
 // button variables 
+const bool serialEnabled = 1; 
 long unsigned currentTime = 0; 
 const int debounceDelay = 10; 
 long okLastDetection = 0;
@@ -41,28 +43,28 @@ bool backJustChanged = 0;
 void buttonState();
 
 void setup() {
-  Serial.begin(9600); 
+
   pinMode(okButton, INPUT_PULLUP); 
   pinMode(backButton, INPUT_PULLUP); 
 
+ if (serialEnabled){
+  Serial.begin(9600); 
   Serial.println();
-
   Serial.println();
-  
   Serial.println();
-  
   Serial.println();
+ }
 
 }
 
 void loop() {
   buttonState(); 
-  // if (okJustChanged && okButtonState == 0){
-  //   Serial.println("--------------------------------------------");
-  // }
-  // if (backButtonState == 1){
-  //   Serial.println("===========");
-  // }
+  if (okJustChanged && okButtonState == 0){
+    if (serialEnabled) Serial.println("-------------------------------------------- ok pressed ");
+  }
+  if (backButtonState == 1 && backJustChanged){
+    if (serialEnabled) Serial.println("----------------------------------------------- back pressed ");
+  }
 
 }
 
@@ -103,7 +105,7 @@ void buttonState(){
       okStartPressed = millis(); 
       if (okButtonState == 0 && okPressed == 1)
       {
-        Serial.println("======just pressed ok =======");
+        if (serialEnabled) Serial.println("======just pressed ok =======");
       }
       okPressed = 0;
       okJustChanged = 1; 
@@ -119,14 +121,19 @@ void buttonState(){
       okHoldTime = okEndPressed - okStartPressed; 
       if (okButtonState == 1 && okPressed == 0)
       {
-        Serial.print("---just released ok ----: holdtime: ");
-        Serial.println(okHoldTime);
+        if (serialEnabled) {
+          Serial.print("---just released ok ----: holdtime: ");
+          Serial.println(okHoldTime);
+        }
       }
       okJustChanged = 1; 
       okPressed = 1;
     }
 
 
+  }
+  else {
+    okJustChanged = 0; 
   }
 
   // if the back button is pressed or released
@@ -139,7 +146,7 @@ void buttonState(){
       backStartPressed = millis(); 
       if (backButtonState == 0 && backPressed == 1)
       {
-        Serial.println("======just pressed back =======");
+        if (serialEnabled) Serial.println("======just pressed back =======");
       }
       backJustChanged = 1; 
       backPressed = 0; 
@@ -155,8 +162,11 @@ void buttonState(){
       backHoldTime = backEndPressed - backStartPressed; 
       if (backButtonState == 1 && backPressed == 0)
       {
-        Serial.print("---just released back ----: holdtime: ");
-        Serial.println(backHoldTime);
+        if (serialEnabled){
+          Serial.print("---just released back ----: holdtime: ");
+          Serial.println(backHoldTime);
+        }
+
       }
 
       backJustChanged = 1;
@@ -169,6 +179,10 @@ void buttonState(){
     }
 
 
+  }
+
+  else {
+    backJustChanged = 0; 
   }
 
 

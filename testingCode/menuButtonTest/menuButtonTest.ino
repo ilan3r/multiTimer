@@ -22,14 +22,19 @@ Description: test the menu and interaction with the buttons
 #define SCREEN_ADDRESS 0x3C ///< See datasheet for Address; 0x3D for 128x64, 0x3C for 128x32
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 
+
+// pin variables 
 const int blueLED = 3; // using this instead of buzzer for now
 const int redLED = 6; // using this instead of vibration motor for now 
 const int okButton = 7; 
 const int backButton = 8; 
 
+
+// menu variables 
 String currentOutput = "dual";
 String currentMode = "timer";
-int cursorInRow1 = 1;  // start cursor in first row
+bool cursorInRow1 = true;  // start cursor in first row
+
 
 // button variables 
 long unsigned currentTime = 0; 
@@ -37,7 +42,7 @@ const int debounceDelay = 10;
 long okLastDetection;
 int okButtonState = 1; // initialize these to unpressed 
 int okLastButtonState = 1;
-bool okPressed = 0;
+bool okPressed = 1;
 unsigned long okStartPressed = 0; 
 unsigned long okEndPressed = 0;
 unsigned long okHoldTime = 0; 
@@ -45,7 +50,7 @@ unsigned long okIdleTime = 0;
 long backLastDetection;
 int backButtonState = 1;  // initialize these to unpressed 
 int backLastButtonState = 1;
-bool backPressed = 0;
+bool backPressed = 1;
 unsigned long backStartPressed = 0; 
 unsigned long backEndPressed = 0;
 unsigned long backHoldTime = 0; 
@@ -82,17 +87,17 @@ void loop() {
 
 
   if (okButtonState == 0){
-    if (cursorInRow1 > 0 ){
+    if (cursorInRow1){
       toggleMode();
     }
-    else if (cursorInRow1 < 0){
+    else if (!cursorInRow1){
       toggleOutputType();
     }
   
 
   }
   if (backButtonState == 0){
-    cursorInRow1 = cursorInRow1 * -1;
+    cursorInRow1 = !(cursorInRow1);
   }
   
 
