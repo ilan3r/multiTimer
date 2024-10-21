@@ -26,7 +26,6 @@ unsigned long okStartPressed = 0;
 unsigned long okEndPressed = 0;
 unsigned long okHoldTime = 0; 
 unsigned long okIdleTime = 0;
-
 long backLastDetection;
 int backButtonState = 1;  // initialize these to unpressed 
 int backLastButtonState = 1;
@@ -35,7 +34,6 @@ unsigned long backStartPressed = 0;
 unsigned long backEndPressed = 0;
 unsigned long backHoldTime = 0; 
 unsigned long backIdleTime = 0;
-
 bool okJustChanged = 0; 
 bool backJustChanged = 0; 
 
