@@ -1,6 +1,6 @@
 /*
-Date: June 25th 2024 
 Description: test stopwatch display on OLED, format properly with stopwatchMin:seconds.milliseconds 
+use buttons to start and stop
 
 */
 
@@ -60,6 +60,8 @@ unsigned long startRandomWait = 0;
   bool okJustChanged = 0; 
   bool backJustChanged = 0;
 
+  unsigned long primedTime = 0; 
+
 
 // function prototypes
   void runStopwatch(); 
@@ -109,14 +111,12 @@ void loop() {
 
 void runStopwatch(){
   display.clearDisplay();
-
-
   // at this size, assuming that we won't reach 10 minutes 
   display.setTextSize(3);             
   display.setTextColor(SSD1306_WHITE);        
   display.setCursor(0,0);             // Start at top-left corner
 
-  stopwatchSec = millis()/1000.0; 
+  stopwatchSec = (millis() - primedTime)/1000.0; 
   stopwatchMin = 0; 
 
   while (stopwatchSec >= 60.0)
@@ -149,23 +149,18 @@ void runStopwatch(){
       display.print(stopwatchSec); 
       display.display();
     }
-
     else
     {
-      display.println(millis()/1000.0, 2);
+      display.println(stopwatchSec, 2);
       display.display();
-
     }
   }
   delay(10);
-
 }
 
 
 void pauseStopwatch(){
-
   display.clearDisplay();
-
   display.setTextSize(3);             
   display.setTextColor(SSD1306_WHITE);        
   display.setCursor(0,0); 
@@ -197,13 +192,14 @@ void pauseStopwatch(){
 
       else
       {
-        display.println(millis()/1000.0, 2);
+        display.println(stopwatchSec, 2);
         display.display();
 
       }
     }
 
 }
+
 
 void buttonState(){
   int okReading = digitalRead(okButton); 
@@ -328,16 +324,18 @@ void buttonState(){
 
 }
 
+
 void handle_stopwatch_paused(){
   pauseStopwatch();
   buttonState();
-  // if (backButtonState == 0 and backJustChanged){
-  //   resetStopwatch();
-  // }
+  if (backButtonState == 0 and backJustChanged){
+    resetStopwatch();
+  }
   if (okButtonState == 0 and okJustChanged){
     currentState = stopwatch_primed; 
   }
 }
+
 
 void handle_stopwatch_primed(){
   digitalWrite(blueLED, HIGH);
@@ -347,15 +345,21 @@ void handle_stopwatch_primed(){
   while (millis() - startRandomWait < randomStart)
   {
     buttonState();
-    if (backButtonState == 0){
+    if (backButtonState == 0 and backJustChanged){
       currentState = stopwatch_paused;
+      digitalWrite(blueLED, LOW);
       break;
     }
   }
-  digitalWrite(blueLED, LOW);
-  currentState = stopwatch_run;
+  if (currentState == stopwatch_primed){
+    digitalWrite(blueLED, LOW);
+    currentState = stopwatch_run;
+    primedTime = (startRandomWait + randomStart);
+
+  }
 
 }
+
 
 void handle_stopwatch_run(){
   runStopwatch();
@@ -363,5 +367,11 @@ void handle_stopwatch_run(){
   if ((okButtonState == 0 and okJustChanged) || (backButtonState == 0 and backJustChanged)){
     currentState = stopwatch_paused;
   }
+}
 
+
+void resetStopwatch(){
+  stopwatchMin = 0; 
+  stopwatchSec = 0; 
+  pauseStopwatch();
 }
