@@ -404,6 +404,12 @@ void handle_stopwatch_primed(){
 
   while (millis() - startRandomWait < randomStart)
   {
+    display.clearDisplay();
+    display.setTextSize(2);             
+    display.setTextColor(SSD1306_WHITE);        
+    display.setCursor(0,0);     
+    display.print("primed");
+    display.display();
     buttonState();
     if (backButtonState == 0 and backJustChanged){
       currentState = stopwatch_paused;
