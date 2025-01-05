@@ -17,14 +17,15 @@ State prevState = menu;
 
 
 // menu variables 
-  String currentOutput = "dual";
+  String currentOutput = "haptic";
   String currentMode = "timer";
   bool cursorInRow1 = true;  // start cursor in first row
-  const int menuExitTime = 3000;
+  const int menuExitTime = 2000;
+  const int pulseTime = 100; 
 
 // pin variables 
-  const int blueLED = 3; // using this instead of buzzer for now
-  const int redLED = 6; // using this instead of vibration motor for now 
+  const int buzzerPin = 3; // using this instead of buzzer for now
+  const int hapticPin = 6; // using this instead of vibration motor for now 
   const int okButton = 7; 
   const int backButton = 8; 
 
@@ -85,6 +86,7 @@ State prevState = menu;
   void toggleOutputType(); 
   void toggleMode();
   void handle_menu();
+  void outputPulse();
 
 
 
@@ -107,8 +109,8 @@ void setup() {
   display.display();
   pinMode(okButton, INPUT_PULLUP); 
   pinMode(backButton, INPUT_PULLUP); 
-  pinMode(blueLED, OUTPUT); 
-  pinMode(redLED, OUTPUT); 
+  pinMode(buzzerPin, OUTPUT); 
+  pinMode(hapticPin, OUTPUT); 
 }
 
 
@@ -397,7 +399,6 @@ void handle_stopwatch_paused(){
 }
 
 void handle_stopwatch_primed(){
-  digitalWrite(blueLED, HIGH);
   randomStart = random(2000, 6000);
   startRandomWait = millis(); 
 
@@ -407,15 +408,14 @@ void handle_stopwatch_primed(){
     if (backButtonState == 0 and backJustChanged){
       currentState = stopwatch_paused;
       prevState = stopwatch_primed;
-      digitalWrite(blueLED, LOW);
       break;
     }
   }
   if (currentState == stopwatch_primed){
-    digitalWrite(blueLED, LOW);
     currentState = stopwatch_run;
     prevState = stopwatch_primed;
     primedTime = (startRandomWait + randomStart);
+    outputPulse();
 
   }
 
@@ -560,6 +560,7 @@ void runTimer(){
     }
     else {
       timerTracker = 2;
+      outputPulse();
       timerDelay = millis();
     }
   }
@@ -571,6 +572,7 @@ void runTimer(){
     }
     else {
       timerTracker = 1; 
+      outputPulse();
       timerDelay = millis();
     }
   }
@@ -611,5 +613,32 @@ void handle_timer_paused(){
     currentState = menu;
     prevState = timer_paused;
   }
+
+}
+
+void outputPulse(){
+  if (currentOutput == "sound"){
+
+    digitalWrite(buzzerPin, HIGH);
+    digitalWrite(hapticPin, LOW);
+  }
+
+  else if (currentOutput == "haptic"){
+    digitalWrite(buzzerPin, LOW);
+    digitalWrite(hapticPin, HIGH);
+  }
+
+  else if (currentOutput == "dual"){
+    digitalWrite(buzzerPin, HIGH); 
+    digitalWrite(hapticPin, HIGH);
+  }
+  else {
+    digitalWrite(buzzerPin, HIGH);
+    digitalWrite(hapticPin, HIGH);
+  }
+
+  delay(pulseTime);
+  digitalWrite(buzzerPin, LOW);
+  digitalWrite(hapticPin, LOW);
 
 }
